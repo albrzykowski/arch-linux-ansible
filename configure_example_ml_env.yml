@@ -4,6 +4,15 @@
   become: true
   vars:
     user: "{{ ansible_user }}"
+    requirements:
+      - pyspark==4.0.1
+      - numpy==2.3.3
+      - pandas==2.3.3
+      - notebook==7.4.7
+      - mlflow==3.4.0
+      - apache-airflow==3.1.0
+      - pyright==1.1.406
+      - opencv-python
   tasks:
     - name: Create workspace/example-ml directory
       file:
@@ -33,14 +42,7 @@
     - name: Create requirements.txt file
       copy:
         dest: /home/{{ user }}/workspace/example-ml/requirements.txt
-        content: |
-          pyspark==4.0.1
-          numpy==2.3.3
-          pandas==2.3.3
-          notebook==7.4.7
-          mlflow==3.4.0
-          apache-airflow==3.1.0
-          pyright==1.1.406
+        content: "{{ requirements | join('\n') }}\n"
         owner: "{{ user }}"
         group: "{{ user }}"
         mode: '0644'

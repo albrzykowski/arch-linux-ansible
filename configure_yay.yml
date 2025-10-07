@@ -1,0 +1,73 @@
+---
+- name: Install GIT and yay from AUR
+  hosts: localhost
+  become: true
+  vars:
+    user: "{{ ansible_user }}"
+    yay_version: "12.5.2-2-x86_64"
+  tasks:
+    - name: Install dependencies
+      community.general.pacman:
+        name:
+          - git
+          - go
+          - base-devel
+        state: present
+      become: true
+
+    - name: Create temporary directory for yay in user home
+      ansible.builtin.file:
+        path: "/home/{{ user }}/tmp_yay"
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0755'
+      become: false
+      register: temp_dir
+
+    - name: Ensure temporary directory permissions
+      ansible.builtin.file:
+        path: "/home/{{ user }}/tmp_yay"
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0755'
+      become: true
+
+    - name: Remove existing yay directory if present
+      ansible.builtin.file:
+        path: "/home/{{ user }}/tmp_yay/yay"
+        state: absent
+      become: false
+
+    - name: Clone yay repository from AUR
+      ansible.builtin.git:
+        repo: https://aur.archlinux.org/yay.git
+        dest: "/home/{{ user }}/tmp_yay/yay"
+        version: master
+      become: false
+      register: git_clone
+      failed_when: git_clone.failed and 'already exists and is not an empty directory' not in git_clone.msg
+
+    - name: Build yay package
+      ansible.builtin.command:
+        cmd: makepkg -s --noconfirm
+        chdir: "/home/{{ user }}/tmp_yay/yay"
+      become: false
+      environment:
+        SHELL: /bin/bash
+        
+    - name: Install yay package
+      ansible.builtin.command:
+        cmd: sudo pacman -U --noconfirm yay-{{ yay_version }}.pkg.tar.zst
+        chdir: "/home/{{ user }}/tmp_yay/yay"
+      become: true
+      environment:
+        SHELL: /bin/bash
+
+    - name: Remove temporary yay directory
+      ansible.builtin.file:
+        path: "/home/{{ user }}/tmp_yay"
+        state: absent
+      when: temp_dir.path is defined
+      become: false
