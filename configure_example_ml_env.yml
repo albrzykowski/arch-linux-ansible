@@ -1,13 +1,13 @@
 ---
-- name: Setup Python development environment
+- name: Setup example Python development environment for ML
   hosts: arch_hosts
   become: true
   vars:
     user: "{{ ansible_user }}"
   tasks:
-    - name: Create workspace/training directory
+    - name: Create workspace/example-ml directory
       file:
-        path: /home/{{ user }}/workspace/training
+        path: /home/{{ user }}/workspace/example-ml
         state: directory
         owner: "{{ user }}"
         group: "{{ user }}"
@@ -19,20 +19,20 @@
         state: present
 
     - name: Create Python virtual environment
-      command: python3 -m venv /home/{{ user }}/workspace/training/venv
+      command: python3 -m venv /home/{{ user }}/workspace/example-ml/venv
       args:
-        creates: /home/{{ user }}/workspace/training/venv
+        creates: /home/{{ user }}/workspace/example-ml/venv
     
     - name: Set permissions for venv directory
       file:
-        path: /home/{{ user }}/workspace/training/venv
+        path: /home/{{ user }}/workspace/example-ml/venv
         owner: "{{ user }}"
         group: "{{ user }}"
         mode: '0755'
 
     - name: Create requirements.txt file
       copy:
-        dest: /home/{{ user }}/workspace/training/requirements.txt
+        dest: /home/{{ user }}/workspace/example-ml/requirements.txt
         content: |
           pyspark==4.0.1
           numpy==2.3.3
@@ -47,5 +47,5 @@
 
     - name: Install Python packages in virtual environment
       pip:
-        requirements: /home/{{ user }}/workspace/training/requirements.txt
-        virtualenv: /home/{{ user }}/workspace/training/venv
+        requirements: /home/{{ user }}/workspace/example-ml/requirements.txt
+        virtualenv: /home/{{ user }}/workspace/example-ml/venv

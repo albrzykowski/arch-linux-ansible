@@ -19,4 +19,6 @@
           - networkmanager
           - nvim
           - git
+          - docker
+          - docker-compose
         state: latest
