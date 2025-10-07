@@ -1,0 +1,39 @@
+---
+- name: Generate and configure SSH keys for user la
+  hosts: arch_hosts
+  become: true
+  vars:
+    user: "la"
+    ssh_key_path: "/home/{{ user }}/.ssh/id_rsa"
+  tasks:
+    - name: Ensure .ssh directory exists
+      file:
+        path: "/home/{{ user }}/.ssh"
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0700'
+
+    - name: Generate SSH key pair for user la
+      ansible.builtin.openssh_keypair:
+        path: "{{ ssh_key_path }}"
+        type: rsa
+        size: 4096
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0600'
+      become_user: "{{ user }}"
+
+    - name: Add public key to authorized_keys
+      authorized_key:
+        user: "{{ user }}"
+        state: present
+        key: "{{ lookup('file', '{{ ssh_key_path }}.pub') }}"
+        exclusive: false
+
+    - name: Ensure correct permissions for authorized_keys
+      file:
+        path: "/home/{{ user }}/.ssh/authorized_keys"
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0600'

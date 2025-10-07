@@ -1,0 +1,12 @@
+---
+- name: Configure varia steps
+  hosts: arch_hosts
+  become: true
+  tasks:
+    - name: Ensure workspace directory exists
+      file:
+        path: /home/{{ ansible_user }}/workspace
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'

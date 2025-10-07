@@ -1,0 +1,70 @@
+---
+- name: Configure Git for user
+  hosts: arch_hosts
+  become: false
+  vars:
+    user: "{{ ansible_user }}"
+    git_user_name: "Leszek"
+    git_user_email: "albrzykowski@gmail.com"
+  tasks:
+    - name: Add a setting to ~/.gitconfig
+      community.general.git_config:
+        name: alias.ci
+        scope: global
+        value: commit
+
+    - name: Add a setting to ~/.gitconfig
+      community.general.git_config:
+        name: alias.st
+        scope: global
+        value: status
+
+    - name: Remove a setting from ~/.gitconfig
+      community.general.git_config:
+        name: alias.ci
+        scope: global
+        state: absent
+
+    - name: Add a setting to ~/.gitconfig
+      community.general.git_config:
+        name: core.editor
+        scope: global
+        value: nvim
+        user: "{{ user }}"
+
+    - name: Add a setting to a system scope (default)
+      community.general.git_config:
+        name: color.ui
+        value: auto
+
+    - name: Configure email
+      community.general.git_config:
+        name: user.email
+        value: '{{ git_user_email }}'
+    
+    - name: Configure name
+      community.general.git_config:
+        name: user.name
+        value: '{{ git_user_name }}'
+
+    - name: Ensure SSH key exists for Git
+      stat:
+        path: "/home/{{ user }}/.ssh/id_rsa"
+      register: ssh_key
+
+    - name: Fail if SSH key is missing
+      fail:
+        msg: "SSH key not found. Run generate_ssh_keys.yml first."
+      when: not ssh_key.stat.exists
+
+    - name: Ensure SSH config for GitHub
+      copy:
+        dest: "/home/{{ user }}/.ssh/config"
+        content: |
+          Host github.com
+              HostName github.com
+              User git
+              IdentityFile /home/{{ user }}/.ssh/id_rsa
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0600'
