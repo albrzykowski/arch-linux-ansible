@@ -1,0 +1,51 @@
+---
+- name: Setup Python development environment
+  hosts: arch_hosts
+  become: true
+  vars:
+    user: "{{ ansible_user }}"
+  tasks:
+    - name: Create workspace/training directory
+      file:
+        path: /home/{{ user }}/workspace/training
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0755'
+
+    - name: Ensure python-virtualenv is installed
+      package:
+        name: python-virtualenv
+        state: present
+
+    - name: Create Python virtual environment
+      command: python3 -m venv /home/{{ user }}/workspace/training/venv
+      args:
+        creates: /home/{{ user }}/workspace/training/venv
+    
+    - name: Set permissions for venv directory
+      file:
+        path: /home/{{ user }}/workspace/training/venv
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0755'
+
+    - name: Create requirements.txt file
+      copy:
+        dest: /home/{{ user }}/workspace/training/requirements.txt
+        content: |
+          pyspark==4.0.1
+          numpy==2.3.3
+          pandas==2.3.3
+          notebook==7.4.7
+          mlflow==3.4.0
+          apache-airflow==3.1.0
+          pyright==1.1.406
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0644'
+
+    - name: Install Python packages in virtual environment
+      pip:
+        requirements: /home/{{ user }}/workspace/training/requirements.txt
+        virtualenv: /home/{{ user }}/workspace/training/venv

@@ -1,7 +1,7 @@
 ---
 - name: Configure varia steps
   hosts: arch_hosts
-  become: true
+  become: false
   tasks:
     - name: Ensure workspace directory exists
       file:

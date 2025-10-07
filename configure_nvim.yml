@@ -1,38 +1,69 @@
 - name: Configure Neovim
   hosts: arch_hosts
-  become: false
+  become: true
+  vars:
+    user: "{{ ansible_user }}"
   tasks:
-    - name: Run pacman -Syu equivalent
+    - name: Ensure Neovim and dependencies are installed
       community.general.pacman:
-        update_cache: true
-        upgrade: true
-      become: true
-        
-    - name: Install packages
-      community.general.pacman:
-        name: neovim
+        name:
+          - neovim
+          - nodejs
+          - npm
         state: present
+
+    - name: Create Neovim config directory
+      file:
+        path: "/home/{{ user }}/.config/nvim"
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0755'
+
+    - name: Create Neovim autoload directory
+      file:
+        path: "/home/{{ user }}/.local/share/nvim/site/autoload"
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0755'
+
+    - name: Install Vim-Plug
+      get_url:
+        url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+        dest: "/home/{{ user }}/.local/share/nvim/site/autoload/plug.vim"
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0644'
+      become_user: "{{ user }}"
 
     - name: Create Neovim config directory for user
       file:
-        path: /home/{{ ansible_user }}/.config/nvim
+        path: /home/{{ user }}/.config/nvim
         state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: "{{ user }}"
+        group: "{{ user }}"
         mode: '0755'
 
     - name: Copy Neovim init.vim config
       copy:
         src: files/nvim/init.vim
-        dest: /home/{{ ansible_user }}/.config/nvim/init.vim
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        dest: /home/{{ user }}/.config/nvim/init.vim
+        owner: "{{ user }}"
+        group: "{{ user }}"
         mode: '0644'
 
     - name: Copy Neovim coc-settings.json config
       copy:
         src: files/nvim/coc-settings.json
-        dest: /home/{{ ansible_user }}/.config/nvim/coc-settings.json
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        dest: /home/{{ user }}/.config/nvim/coc-settings.json
+        owner: "{{ user }}"
+        group: "{{ user }}"
         mode: '0644'
+      
+    - name: Install coc-pyright for coc.nvim
+      command:
+        cmd: nvim --headless -c "CocInstall -sync coc-pyright" -c "qall"
+      args:
+        creates: "{{ ansible_env.HOME }}/.config/coc/extensions/node_modules/coc-pyright"
+      become: no

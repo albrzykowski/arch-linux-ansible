@@ -6,8 +6,8 @@
 
 ## Usage
 Run playbooks in order:
-1. `ansible-playbook -i inventory.ini configure_additionals.yml -K`
+1. `ansible-playbook -i inventory.ini configure_additionals.yml`
 2. `ansible-playbook -i inventory.ini configure_common_packages.yml -K`
-3. `ansible-playbook -i inventory.ini configure_nvim.yml -K`
+3. `ansible-playbook -i inventory.ini configure_nvim.yml`
 4. `ansible-playbook -i inventory.ini configure_ssh_keys.yml -K`
 5. `ansible-playbook -i inventory.ini configure_git.yml -K`
