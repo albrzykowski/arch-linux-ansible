@@ -1,11 +1,11 @@
 ---
 - name: Configure Git for user
   hosts: arch_hosts
-  become: false
+  become: true
   vars:
     user: "{{ ansible_user }}"
     git_user_name: "Leszek"
-    git_user_email: "albrzykowski@gmail.com"
+    git_user_email: ""
   tasks:
     - name: Add a setting to ~/.gitconfig
       community.general.git_config:
@@ -30,7 +30,6 @@
         name: core.editor
         scope: global
         value: nvim
-        user: "{{ user }}"
 
     - name: Add a setting to a system scope (default)
       community.general.git_config:
