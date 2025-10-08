@@ -15,3 +15,28 @@
         name: "{{ user }}"
         groups: docker
         append: yes
+        
+#    - name: Reload permissions
+#      ansible.builtin.command:
+#        cmd: newgrp docker
+#      environment:
+#        SHELL: /bin/bash
+        
+    - name: Add Docker aliases to .bashrc
+      ansible.builtin.blockinfile:
+        path: "/home/{{ ansible_user }}/.bashrc"
+        block: |
+          alias docker_s="sudo systemctl start docker.service"
+          alias docker_c_a="docker system prune -a --volumes"
+          alias docker_c_v="docker volume prune -f"
+          alias docker_c_n="docker network prune -f"
+          alias docker_c_c="docker container prune -f"
+          alias docker_c_i="docker image prune -a -f"
+          alias docker_ps="docker ps -a"
+          alias docker_stop='[ -n "$(docker ps -q)" ] && docker stop $(docker ps -q)'
+          alias docker_rm='[ -n "$(docker ps -q)" ] && docker stop $(docker ps -q) && docker rm $(docker ps -aq) && docker volume prune -f && docker network prune -f'
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - Docker aliases"
+        create: yes
+        mode: '0644'
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"       
