@@ -33,8 +33,8 @@
           alias docker_c_c="docker container prune -f"
           alias docker_c_i="docker image prune -a -f"
           alias docker_ps="docker ps -a"
-          alias docker_stop='[ -n "$(docker ps -q)" ] && docker stop $(docker ps -q)'
-          alias docker_rm='[ -n "$(docker ps -q)" ] && docker stop $(docker ps -q) && docker rm $(docker ps -aq) && docker volume prune -f && docker network prune -f'
+          alias docker_stop='[ -n "$(docker ps -qa)" ] && docker stop $(docker ps -qa)'
+          alias docker_rm='[ -n "$(docker ps -qa)" ] && docker stop $(docker ps -qa) && docker rm $(docker ps -aq) && docker volume prune -f && docker network prune -f'
         marker: "# {mark} ANSIBLE MANAGED BLOCK - Docker aliases"
         create: yes
         mode: '0644'
