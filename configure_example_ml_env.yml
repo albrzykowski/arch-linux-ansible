@@ -31,6 +31,7 @@
       command: python3 -m venv /home/{{ user }}/workspace/example-ml/venv
       args:
         creates: /home/{{ user }}/workspace/example-ml/venv
+      become: false
     
     - name: Set permissions for venv directory
       file:

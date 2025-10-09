@@ -11,3 +11,37 @@
         group: "{{ ansible_user }}"
         mode: '0755'
       become: false
+      
+    - name: Creating ~/Templates directory
+      file:
+        path: /home/{{ ansible_user }}/Templates
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+      become: false
+      
+    - name: Set XDG_TEMPLATES_DIR variable (if not set)
+      lineinfile:
+        path: /home/{{ ansible_user }}/.config/user-dirs.dirs
+        regexp: '^XDG_TEMPLATES_DIR='
+        line: 'XDG_TEMPLATES_DIR="$HOME/Templates"'
+        create: yes
+        mode: '0644'
+      register: xdg_update
+      become: false
+
+    - name: Update XDG user directories
+      command: xdg-user-dirs-update
+      when: xdg_update.changed  # Only if the file was modified
+
+    - name: Create sample empty text file template
+      file:
+        path: /home/{{ ansible_user }}/Templates/New_Document
+        state: touch
+        mode: '0644'
+      become: false
+
+    - name: Restart Nautilus for immediate effect
+      shell: killall nautilus || true #quicfix caused by "nautilus -q" that returns non-zero value
+      ignore_errors: yes  # Ignore if Nautilus isn’t running
